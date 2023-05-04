@@ -1,0 +1,33 @@
+npm install dotenv request-promise tunnel
+
+
+
+{"ip":"161.123.87.130","country":"US","asn":{"asnum":207990,"org_name":"HostRoyale Technologies Pvt Ltd"},"geo":{"city":"New York","region":"NY","region_name":"New York","postal_code":"10118","latitude":40.7123,"longitude":-74.0068,"tz":"America/New_York","lum_city":"newyork","lum_region":"ny"}}
+{"ip":"206.204.62.120","country":"US","asn":{"asnum":207990,"org_name":"HostRoyale Technologies Pvt Ltd"},"geo":{"city":"San Francisco","region":"CA","region_name":"California","postal_code":"94142","latitude":37.7809,"longitude":-122.4245,"tz":"America/Los_Angeles","lum_city":"sanfrancisco","lum_region":"ca"}}        
+{"ip":"152.39.201.55","country":"US","asn":{"asnum":20473,"org_name":"AS-CHOOPA"},"geo":{"city":"Ashburn","region":"VA","region_name":"Virginia","postal_code":"20147","latitude":39.018,"longitude":-77.539,"tz":"America/New_York","lum_city":"ashburn","lum_region":"va"}}
+{"ip":"161.123.183.70","country":"US","asn":{"asnum":207990,"org_name":"HostRoyale Technologies Pvt Ltd"},"geo":{"city":"Washington","region":"DC","region_name":"District of Columbia","postal_code":"20001","latitude":38.9091,"longitude":-77.0203,"tz":"America/New_York","lum_city":"washington","lum_region":"dc"}}       
+
+
+Для решения этой задачи вам необходимо разбить ее на две части: клиентскую (frontend) и серверную (backend).
+
+Клиентская часть (frontend):
+
+Создайте форму ввода с полем для ввода названия товара и кнопкой "поиск".
+При нажатии на кнопку "поиск" отправляйте AJAX-запрос на сервер (backend), передавая ему название товара в качестве параметра.
+Выводите полученные результаты поиска на экран (например, в виде списка продуктов).
+Серверная часть (backend):
+
+Создайте API-метод для обработки запроса от клиента. Например, метод с маршрутом "/search".
+Используйте библиотеку для парсинга веб-страниц (например, Cheerio или Puppeteer), чтобы осуществить поиск товара на Амазон.
+Отправьте результаты поиска обратно клиенту в виде JSON-объекта.
+Общий алгоритм работы программы:
+
+Пользователь заполняет форму на клиентской части.
+Клиентская часть отправляет AJAX-запрос на серверную часть с названием товара.
+Серверная часть выполняет поиск на Амазоне, используя парсер веб-страниц.
+Серверная часть отправляет результаты поиска обратно на клиентскую часть в виде JSON-объекта.
+Клиентская часть отображает полученные результаты на экране.
+Некоторые важные моменты:
+
+Парсинг веб-страниц может занять много времени, поэтому необходимо использовать асинхронные функции и обработку ошибок.
+Необходимо обеспечить безопасность при работе с данными пользователя. Например, необходимо проверять полученные от пользователя данные на наличие вредоносного кода и предотвращать возможные атаки на серверную часть.
