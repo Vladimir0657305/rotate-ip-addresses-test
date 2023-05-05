@@ -17,13 +17,16 @@ async function rotateWithBrightData() {
         rejectUnauthorized: false
     };
     const html = await rp(options);
-    console.log(html);
+    // console.log(html);
     const { window } = new JSDOM(html);
     const parser = new window.DOMParser();
+    console.log(parser);
     const doc = parser.parseFromString(html, "text/html");
-    const result = doc.querySelector(".results").innerHTML;
-    console.log(result);
-    window.document.body.innerHTML = result;
+    console.log(doc);
+    const result = doc.querySelector(".results");
+    
+    // console.log(result);
+    window.document.body.innerHTML = result.innerHTML;
     console.log(window.document.documentElement.outerHTML);
 }
 
