@@ -19,6 +19,7 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "https-proxy-agent": "^5.0.1",
+    "jsdom": "^22.0.0",
     "node-fetch": "^2.6.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
