@@ -105,8 +105,8 @@ app.get('/', async (req, res) => {
             }
         }
 
-        fs.writeFile('file.txt', dataExample, (err) => {
-            console.log('WRITE');
+        fs.writeFile('file.txt', JSON.stringify(parsedData), (err) => {
+
             if (err) throw err;
             console.log('Data has been written to file');
         });
