@@ -1,0 +1,80 @@
+import dotenv from 'dotenv';
+import express from 'express';
+import * as parse5 from 'parse5';
+import { rotateWithBrightData } from './rotateWithBrightData';
+import fetch from 'node-fetch';
+
+dotenv.config();
+
+const app = express();
+const port = 3000;
+
+app.get('/', async (req, res) => {
+    try {
+        let page = 0;
+        let lastPage = 21;
+        let data = [];
+        const hrefs = [];
+        
+        let url = 'https://www.phin.org.uk/search/consultants?s_location_input=London&s_location_coordinates=51.5072178%2C-0.1275862&s_speciality_input=General%20medicine&s_speciality_id=300';
+        const nextUrl = `https://www.phin.org.uk/`;
+
+        while (page <= lastPage) {
+            const nextPageUrl = url + `( page === 0 ? '' : &s_page_number=${page})`;
+            // const nextUrl = `${hrefs.shift()}`;
+            data = await rotateWithBrightData(nextPageUrl);
+            // data = await rotateWithBrightData(nextUrl);
+
+            // const nextDocument = parse5.parse(data);
+            // findHref(nextDocument);
+            
+            const document = parse5.parse(data);
+            const findHref = (node) => {
+            if (node.tagName === 'a' && node.attrs.find((attr) => attr.name === 'class' && attr.value === 'view-button')) {
+                const href = node.attrs.find((attr) => attr.name === 'href');
+                if (href) hrefs.push(href.value);
+            }
+            if (node.childNodes) {
+                node.childNodes.forEach((childNode) => findHref(childNode));
+            }
+        };
+
+        findHref(document);
+            
+        
+            if (hrefs.length === 0 && page > 0) {
+                url = nextPageUrl;
+                data = await rotateWithBrightData(url);
+                const finalDocument = parse5.parse(data);
+                const finalHrefs = [];
+
+                findHref(finalDocument);
+                for (let i = 0; i < finalHrefs.length; i++) {
+                    const finalUrl = `https://www.phin.org.uk/${finalHrefs[i]}`;
+                    const finalData = await rotateWithBrightData(finalUrl);
+                    // обработка данных
+                }
+            }
+            page++;
+        }
+
+
+        
+        
+
+        
+
+        
+
+        
+
+        res.send('Data parsed successfully');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`);
+});

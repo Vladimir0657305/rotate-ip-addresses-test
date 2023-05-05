@@ -19,14 +19,17 @@
   },
   "homepage": "https://github.com/cobalt-intelligence/rotate-ip-addresses-in-proxies#readme",
   "dependencies": {
+    "@types/parse5-htmlparser2-tree-adapter": "^7.0.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "https-proxy-agent": "^5.0.1",
     "jsdom": "^22.0.0",
     "node-fetch": "^2.6.1",
+    "parse5": "^7.1.2",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "tunnel": "^0.0.6"
+    "tunnel": "^0.0.6",
+    "unpipe": "^1.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
