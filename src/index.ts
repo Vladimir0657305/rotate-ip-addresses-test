@@ -6,6 +6,7 @@ import { rotateWithBrightData } from './rotateWithBrightData';
 const fs = require('fs');
 import * as domUtils from "@degjs/dom-utils";
 const { parse } = require('node-html-parser');
+const cheerio = require('cheerio');
 
 
 // import fetch from 'node-fetch';
@@ -48,20 +49,18 @@ app.get('/', async (req, res) => {
             }
         };
 
-        const findData = async (node) => {
-            if (node.nodeName === 'script' && node.attrs && node.attrs.find(attr => attr.name === 'type' && attr.value === 'application/ld+json')) {
-                if (node.attrs.find(attr => attr.name === 'src' && attr.value !== undefined)) {
-                    console.log('WORK');
-                    return; // если скрипт находится по ссылке, то его содержимое не парсим
-                }
-                const scriptContent = node.innerHTML ? node.innerHTML.trim() : '';
+        const findData = (node) => {
+            const $ = cheerio.load(node);
+            $('script[type="application/ld+json"]').each((index, element) => {
+                console.log('WORK');
+                const scriptContent = $(element).html().trim();
                 const data = JSON.parse(scriptContent);
                 if (data.name) {
                     const name = data.name;
                     parsedData.push(name);
                     console.log(name);
                 }
-            }
+            });
             if (node.attrs) {
                 const href = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('mailto:'));
                 if (href) {
@@ -87,6 +86,7 @@ app.get('/', async (req, res) => {
                 node.childNodes.forEach((childNode) => findData(childNode));
             }
         };
+
 
         findHref(document);
 
