@@ -21,6 +21,7 @@
   "dependencies": {
     "@degjs/dom-utils": "^3.0.0",
     "@types/parse5-htmlparser2-tree-adapter": "^7.0.0",
+    "csv-writer": "^1.6.0",
     "domutils": "^3.1.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
