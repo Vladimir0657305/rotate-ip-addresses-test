@@ -15,7 +15,8 @@ dotenv.config();
 const app = express();
 const port = 3000;
 const parsedData = [];
-const jsdom = require("jsdom");
+const foundEmails = new Set();
+const foundPhones = new Set();
 
 // (async () => {
 //     const url = 'https://www.example.com';
@@ -26,6 +27,7 @@ const jsdom = require("jsdom");
 app.get('/', async (req, res) => {
     try {
         let page = 0;
+        const lastPage =21;
         let url = 'https://www.phin.org.uk/search/consultants?s_location_input=London&s_location_coordinates=51.5072178%2C-0.1275862&s_speciality_input=General%20medicine&s_speciality_id=300';
         let data = await rotateWithBrightData(url);
         // console.log(data);
@@ -46,20 +48,39 @@ app.get('/', async (req, res) => {
             }
         };
 
-        const findData = (node) => {
+        const findData = async (node) => {
+            if (node.nodeName === 'script' && node.attrs && node.attrs.find(attr => attr.name === 'type' && attr.value === 'application/ld+json')) {
+                if (node.attrs.find(attr => attr.name === 'src' && attr.value !== undefined)) {
+                    console.log('WORK');
+                    return; // если скрипт находится по ссылке, то его содержимое не парсим
+                }
+                const scriptContent = node.innerHTML ? node.innerHTML.trim() : '';
+                const data = JSON.parse(scriptContent);
+                if (data.name) {
+                    const name = data.name;
+                    parsedData.push(name);
+                    console.log(name);
+                }
+            }
             if (node.attrs) {
                 const href = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('mailto:'));
                 if (href) {
                     const emailTemp = href.value.substring(7);
                     const email = emailTemp.split('?')[0];
-                    console.log('EMAIL',email);
-                    parsedData.push(email);
+                    if (!foundEmails.has(email)) {
+                        console.log('EMAIL', email);
+                        parsedData.push(email);
+                        foundEmails.add(email);
+                    }
                 }
                 const tel = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('tel:'));
                 if (tel) {
                     const phone = tel.value.substring(4);
-                    console.log('PHONE', phone);
-                    parsedData.push(phone);
+                    if (!foundPhones.has(phone)) {
+                        console.log('PHONE', phone);
+                        parsedData.push(phone);
+                        foundPhones.add(phone);
+                    }
                 }
             }
             if (node.childNodes) {
@@ -69,35 +90,30 @@ app.get('/', async (req, res) => {
 
         findHref(document);
 
-        while (hrefs.length > 0 ) {
-            page++;
-            let dataNext;
-            const nextPageUrl = url + `&s_page_number=${page}`;
-            const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
-            console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
-            dataNext = await rotateWithBrightData(nextUrl);
-            const documentNext = parse5.parse(dataNext);
-            findData(documentNext);
-            if (hrefs.length === 0 && page > 0) {
-                url = nextPageUrl;
-                console.log('PAGE=>', page, 'URL = NEXTPAGEURL=>', url);
-                data = await rotateWithBrightData(url);
-                const finalDocument = parse5.parse(data);
-                const finalHrefs = hrefs.slice();
 
-                while (finalHrefs.length > 0) {
-                    const finalUrl = `https://www.phin.org.uk/${finalHrefs.shift()}`;
-                    const finalData = await rotateWithBrightData(finalUrl);
-                    const finalDocument = parse5.parse(finalData);
-                    findData(finalDocument);
-                }
+        let nextPageUrl;
+
+
+        while(page <= 1) {
+            while (hrefs.length != 11) {
+                const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
+                console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
+                const dataNext = await rotateWithBrightData(nextUrl);
+                console.log(dataNext);
+                const documentNext = parse5.parse(dataNext);
+                findData(documentNext);
             }
+            page++;
+            const nextPageUrl = url + `&s_page_number=${page}`;
+            data = await rotateWithBrightData(nextPageUrl);
+            const nextPageData = parse5.parse(data);
+            findHref(nextPageData);
         }
 
         // Convert parsedData array to CSV format and write to file
         const csvData = parsedData.map((data) => {
-            return `"${data}"`;
-        }).join(",") + "\n";
+            return `"${data}",`;
+        }).join("");
 
         fs.writeFile('file.csv', csvData, (err) => {
             if (err) throw err;
