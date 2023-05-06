@@ -5,14 +5,13 @@ import { rotateWithBrightData } from './rotateWithBrightData';
 const fs = require('fs');
 
 
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
 
 dotenv.config();
 
 const app = express();
 const port = 3000;
 const parsedData = [];
-const dataExample = 'Hello, World!';
 
 // (async () => {
 //     const url = 'https://www.example.com';
@@ -21,24 +20,28 @@ const dataExample = 'Hello, World!';
 // })();
 
 app.get('/', async (req, res) => {
-    console.log('WORK');
     try {
-        //     (async () => {
-        //     const url = 'https://www.example.com';
-        //     const data = await rotateWithBrightData(url);
-        //     console.log(data);
-        // })();
         let page = 0;
         let url = 'https://www.phin.org.uk/search/consultants?s_location_input=London&s_location_coordinates=51.5072178%2C-0.1275862&s_speciality_input=General%20medicine&s_speciality_id=300';
         let data = await rotateWithBrightData(url);
-        console.log(data);
+        // console.log(data);
         const hrefs = [];
         const document = parse5.parse(data);
 
         const findHref = (node) => {
-            if (node.tagName === 'a' && node.attrs.find((attr) => attr.name === 'class' && attr.value === 'view-button')) {
+            console.log('WORK FINDHREF', node.tagName, 'WORK FINDHREF ATRIBUTE', node.attrs);
+            if (node.tagName === 'a') {
                 const href = node.attrs.find((attr) => attr.name === 'href');
-                if (href) hrefs.push(href.value);
+                console.log('SAVE HREF=>', href);
+                if (href) {
+                    const fullHref = `https://www.phin.org.uk${href.value}`;
+                    const viewButtonAttr = node.attrs.find((attr) => attr.name === 'class' && attr.value === 'view-button');
+                    console.log('!!!!viewButtonAttr=>', viewButtonAttr);
+                    if (viewButtonAttr) {
+                        hrefs.push(fullHref);
+                        console.log('FINDfullHREF', fullHref);
+                    }
+                }
             }
             if (node.childNodes) {
                 node.childNodes.forEach((childNode) => findHref(childNode));
@@ -66,11 +69,12 @@ app.get('/', async (req, res) => {
                 console.log('Phone:', phoneHref);
             }
 
-            parsedData.push({
-                name: name,
-                email: emailHref,
-                phone: phoneHref,
-            });
+            // parsedData.push({
+            //     name: name,
+            //     email: emailHref,
+            //     phone: phoneHref,
+            // });
+            parsedData.push([page, name, emailHref, phoneHref]);
 
 
             if (node.childNodes) {
