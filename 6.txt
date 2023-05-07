@@ -19,7 +19,7 @@ const port = 3000;
 const parsedData = [];
 const foundEmails = new Set();
 const foundPhones = new Set();
-let counter = 1;
+
 
 // (async () => {
 //     const url = 'https://www.example.com';
@@ -56,34 +56,21 @@ app.get('/', async (req, res) => {
         const findData = (node) => {
             const mainContentDiv = findDivWithClass(node, 'main-content svelte-ectbpk');
             const title = findFirstH1(mainContentDiv);
-            const mainContentDivAbout = findDivWithClass(node, 'body-section svelte-1cjckml');
-            console.log('mainContentDivAbout=>',mainContentDivAbout);
-            const contentContainerDiv = findDivWithClass(mainContentDivAbout, 'content-container svelte-1cjckml');
-            console.log('contentContainerDiv', contentContainerDiv);
-            const subSpecialities = findSubSpecialities(contentContainerDiv);
-            
-            
-
-            // const targetDiv = findDivWithClass(contentContainerDiv, 'svelte-1u2io8r');
-            // const targetPTag = findPTagById(targetDiv, 'profile-about-sub-specialities');
-
             const email = findEmail(node, 'center svelte-11uoyco');
             const phone = findPhone(node, 'center svelte-11uoyco');
 
-            parsedData.push(`${counter},${title},${subSpecialities},${email},${phone}`);
-
+            parsedData.push(title, email, phone);
             console.log(parsedData);
-            counter++;
         }
 
         const findDivWithClass = (node, className) => {
-            if (node && node.nodeName === 'div' &&
+            if (node.nodeName === 'div' &&
                 node.attrs &&
                 node.attrs.some(attr => attr.name === 'class' && attr.value === className)) {
                 return node;
             }
 
-            if (node && node.childNodes) {
+            if (node.childNodes) {
                 for (const childNode of node.childNodes) {
                     const result = findDivWithClass(childNode, className);
                     if (result) {
@@ -108,38 +95,6 @@ app.get('/', async (req, res) => {
 
             return null;
         }
-        
-
-
-
-
-        const findSubSpecialities = (node) => {
-            if (node && node.nodeName === 'div' &&
-                node.attrs &&
-                node.attrs.some(attr => attr.name === 'class' && attr.value === 'svelte-1u2io8r')) {
-                const pTags = node.childNodes.filter(childNode => childNode.nodeName === 'p');
-                const subSpecialityPTag = pTags.find(pTag => pTag.attrs && pTag.attrs.some(attr => attr.name === 'id' && attr.value === 'profile-about-sub-specialities'));
-
-                if (subSpecialityPTag) {
-                    const subSpecialityText = subSpecialityPTag.childNodes.find(childNode => childNode.nodeName === '#text').value.trim();
-                    console.log('Sub-speciality:', subSpecialityText);
-                    return subSpecialityText;
-                }
-            }
-
-            if (node && node.childNodes) {
-                for (const childNode of node.childNodes) {
-                    const result = findSubSpecialities(childNode);
-                    if (result) {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-
 
         const findEmail = (node, className) => {
             if (node.nodeName === 'a' &&
@@ -207,9 +162,8 @@ app.get('/', async (req, res) => {
 
         // Convert parsedData array to CSV format and write to file
         const csvData = parsedData.map((data) => {
-            return data.join(',') + '\n';
+            return `"${data}",`;
         }).join("");
-
 
         fs.writeFile('file.csv', csvData, (err) => {
             if (err) throw err;
