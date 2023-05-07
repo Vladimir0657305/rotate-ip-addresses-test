@@ -1,13 +1,13 @@
-// import { createObjectCsvWriter } from 'csv-writer';
+import { createObjectCsvWriter } from 'csv-writer';
 import dotenv from 'dotenv';
 import express from 'express';
 import * as parse5 from 'parse5';
-// import { TreeAdapter } from 'parse5';
+import { TreeAdapter } from 'parse5';
 import { rotateWithBrightData } from './rotateWithBrightData';
 const fs = require('fs');
-// import * as domUtils from "@degjs/dom-utils";
-// const { parse } = require('node-html-parser');
-// const cheerio = require('cheerio');
+import * as domUtils from "@degjs/dom-utils";
+const { parse } = require('node-html-parser');
+const cheerio = require('cheerio');
 
 
 // import fetch from 'node-fetch';
@@ -30,9 +30,10 @@ let counter = 1;
 app.get('/', async (req, res) => {
     try {
         let page = 0;
-        const lastPage = 21;
+        const lastPage =21;
         let url = 'https://www.phin.org.uk/search/consultants?s_location_input=London&s_location_coordinates=51.5072178%2C-0.1275862&s_speciality_input=General%20medicine&s_speciality_id=300';
         let data = await rotateWithBrightData(url);
+        // console.log(data);
         const hrefs = [];
         const document = parse5.parse(data);
 
@@ -50,12 +51,17 @@ app.get('/', async (req, res) => {
             }
         };
 
+
+
         const findData = (node) => {
             const mainContentDiv = findDivWithClass(node, 'main-content svelte-ectbpk');
             const title = findFirstH1(mainContentDiv);
             const mainContentDivAbout = findDivWithClass(node, 'body-section svelte-1cjckml');
+            // console.log('mainContentDivAbout=>', mainContentDivAbout);
             const contentContainerDiv = findDivWithClass(mainContentDivAbout, 'content-container svelte-1cjckml');
+            // console.log('contentContainerDiv=>',contentContainerDiv);
             const subSpecialities = findSubSpecialities(contentContainerDiv);
+            console.log('subSpecialities=>',subSpecialities);
 
             const email = findEmail(node, 'center svelte-11uoyco');
             const phone = findPhone(node, 'center svelte-11uoyco');
@@ -163,13 +169,22 @@ app.get('/', async (req, res) => {
             return null;
         }
 
+
+
+
+
         findHref(document);
 
-        while (page <= 1) {
+
+        // let nextPageUrl;
+
+
+        while(page <= 1) {
             while (hrefs.length != 0) {
                 const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
                 console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
                 const dataNext = await rotateWithBrightData(nextUrl);
+                // console.log(dataNext);
                 const documentNext = parse5.parse(dataNext);
                 findData(documentNext);
             }
@@ -184,6 +199,7 @@ app.get('/', async (req, res) => {
         const csvData = parsedData.map((data) => {
             return data.join(',') + '\n';
         }).join("");
+
 
         fs.writeFile('file.csv', csvData, (err) => {
             if (err) throw err;
