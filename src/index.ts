@@ -57,31 +57,25 @@ app.get('/', async (req, res) => {
             const mainContentDiv = findDivWithClass(node, 'main-content svelte-ectbpk');
             const title = findFirstH1(mainContentDiv);
             const mainContentDivAbout = findDivWithClass(node, 'body-section svelte-1cjckml');
-            console.log('mainContentDivAbout=>', mainContentDivAbout);
+            // console.log('mainContentDivAbout=>', mainContentDivAbout);
             const contentContainerDiv = findDivWithClass(mainContentDivAbout, 'content-container svelte-1cjckml');
-            console.log('contentContainerDiv=>',contentContainerDiv);
-            // const targetDiv = findDivWithClass(contentContainerDiv, 'svelte-1u2io8r');
-            // console.log('targetDiv=>', targetDiv);
-            // const targetPTag = findPTagById(targetDiv, 'profile-about-sub-specialities');
-
+            // console.log('contentContainerDiv=>',contentContainerDiv);
             const subSpecialities = findSubSpecialities(contentContainerDiv);
             console.log('subSpecialities=>',subSpecialities);
 
             const email = findEmail(node, 'center svelte-11uoyco');
             const phone = findPhone(node, 'center svelte-11uoyco');
 
-            parsedData.push(`${counter},${title},${email},${phone}`);
+            parsedData.push(`${counter},${title},${subSpecialities},${email},${phone}`);
 
             console.log(parsedData);
             counter++;
         }
 
         const findDivWithClass = (node, className) => {
-            // console.log('current node:', node);
             if (node && node.nodeName === 'div' &&
                 node.attrs &&
                 node.attrs.some(attr => attr.name === 'class' && attr.value === className)) {
-                console.log('div with class found:', node);
                 return node;
             }
 
@@ -112,42 +106,18 @@ app.get('/', async (req, res) => {
 
             return null;
         }
-        
-
-
 
         const findSubSpecialities = (node) => {
-            console.log('WORK22');
-            // console.log(node);
-
-            const printNodes = (node) => {
-                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
-                    console.log('Text node: ' + node.textContent);
-                } else if (node.nodeType === Node.ELEMENT_NODE && node.textContent.trim() !== '') {
-                    console.log('Element: ' + node.nodeName + ' - ' + node.textContent);
-                }
-
-                if (node.childNodes) {
-                    for (const childNode of node.childNodes) {
-                        printNodes(childNode);
-                    }
-                }
-            }
-            printNodes(node);
-
-            if (node && node.nodeName === 'div' &&
+            let result = '';
+            if (node.nodeName === 'p' &&
                 node.attrs &&
-                node.attrs.some(attr => attr.name === 'class' && attr.value === 'svelte-1u2io8r')) {
-                console.log('WORK33');
-                const pTags = node.childNodes.filter(childNode => childNode.nodeName === 'p');
-                console.log('pTags=>',pTags);
-                const subSpecialityPTag = pTags.find(pTag => pTag.attrs && pTag.attrs.some(attr => attr.name === 'id' && attr.value === 'profile-about-sub-specialities'));
-
-                if (subSpecialityPTag) {
-                    const subSpecialityText = subSpecialityPTag.childNodes.find(childNode => childNode.nodeName === '#text').value.trim();
-                    console.log('Sub-speciality:', subSpecialityText);
-                    return subSpecialityText;
-                }
+                node.attrs.some(attr => attr.name === 'id' && attr.value === 'profile-about-sub-specialities')) {
+                node.childNodes.forEach(childNode => {
+                    if (childNode.nodeName === '#text') {
+                        result = childNode.value || childNode.nodeValue;
+                    }
+                });
+                return result;
             }
 
             if (node && node.childNodes) {
@@ -158,32 +128,8 @@ app.get('/', async (req, res) => {
                     }
                 }
             }
-
             return null;
         }
-
-
-
-        const findPTagById = (node, id) => {
-            if (node.nodeName === 'p' &&
-                node.attrs &&
-                node.attrs.some(attr => attr.name === 'id' && attr.value === id)) {
-                return node;
-            }
-
-            if (node.childNodes) {
-                for (const childNode of node.childNodes) {
-                    const result = findPTagById(childNode, id);
-                    if (result) {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
-        };
-
-
 
         const findEmail = (node, className) => {
             if (node.nodeName === 'a' &&
