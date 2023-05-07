@@ -53,55 +53,53 @@ app.get('/', async (req, res) => {
 
 
 
-        const findData = (node) => {
-            const mainContentDiv = findDivWithClass(node, 'main-content svelte-ectbpk');
-            const title = findFirstH1(mainContentDiv);
-            const foundEmails = new Set();
-            const foundPhones = new Set();
-            findEmailAndPhone(mainContentDiv, foundEmails, foundPhones);
+        function findH1WithClass(node) {
+            function traverse(node) {
+                if (node.nodeName === 'div' &&
+                    node.attrs &&
+                    node.attrs.some(attr => attr.name === 'class' && attr.value === 'main-content svelte-ectbpk')) {
+                    return findH1(node);
+                }
 
-            parsedData.push(title, ...foundEmails, ...foundPhones);
-            console.log(parsedData);
-        }
-
-        const findDivWithClass = (node, className) => {
-            if (node.nodeName === 'div' &&
-                node.attrs &&
-                node.attrs.some(attr => attr.name === 'class' && attr.value === className)) {
-                return node;
-            }
-
-            if (node.childNodes) {
-                for (const childNode of node.childNodes) {
-                    const result = findDivWithClass(childNode, className);
-                    if (result) {
-                        return result;
+                if (node.childNodes) {
+                    for (const childNode of node.childNodes) {
+                        const result = traverse(childNode);
+                        if (result) {
+                            return result;
+                        }
                     }
                 }
             }
 
-            return null;
-        }
+            function findH1(node) {
+                if (node.nodeName === 'h1') {
+                    const name = node.childNodes.find((childNode) => childNode.nodeName === '#text').value.trim();
+                    console.log('!!!!!!!!!!!!!!!=>',name);
+                    return name;
+                }
 
-        const findFirstH1 = (node) => {
-            if (node.nodeName === 'h1') {
-                const name = node.childNodes.find((childNode) => childNode.nodeName === '#text').value.trim();
-                console.log('Name=>', name);
-                return name;
+                if (node.childNodes) {
+                    return findH1(node.childNodes[0]);
+                }
+
+                return null;
             }
 
-            if (node.childNodes) {
-                return findFirstH1(node.childNodes[0]);
-            }
-
-            return null;
+            return traverse(node);
         }
 
-        const findEmailAndPhone = (node, foundEmails, foundPhones) => {
-            console.log('WORK');
+
+
+
+        const findData = (node) => {
+            const title = findH1WithClass(node);
+            if (title) {
+                parsedData.push(title);
+                console.log('Name=>', title);
+            }
+
             if (node.attrs) {
                 const href = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('mailto:'));
-                console.log('EMAIL HREF =>',href);
                 if (href) {
                     const emailTemp = href.value.substring(7);
                     const email = emailTemp.split('?')[0];
@@ -112,7 +110,6 @@ app.get('/', async (req, res) => {
                     }
                 }
                 const tel = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('tel:'));
-                console.log('TEL HREF =>', href);
                 if (tel) {
                     const phone = tel.value.substring(4);
                     if (!foundPhones.has(phone)) {
@@ -122,15 +119,15 @@ app.get('/', async (req, res) => {
                     }
                 }
             }
-
             if (node.childNodes) {
-                for (const childNode of node.childNodes) {
-                    findEmailAndPhone(childNode, foundEmails, foundPhones);
-                }
+                node.childNodes.forEach((childNode) => findData(childNode));
             }
-        }
-
-
+            const uniqueData = parsedData.filter((value, index, self) => {
+                return self.indexOf(value) === index;
+            });
+            
+            console.log('UUUUUUUUUUUUUUUUUUUUIIIIIIIIIIII', uniqueData);
+        };
 
 
         findHref(document);
