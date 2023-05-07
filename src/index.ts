@@ -2,6 +2,7 @@ import { createObjectCsvWriter } from 'csv-writer';
 import dotenv from 'dotenv';
 import express from 'express';
 import * as parse5 from 'parse5';
+import { TreeAdapter } from 'parse5';
 import { rotateWithBrightData } from './rotateWithBrightData';
 const fs = require('fs');
 import * as domUtils from "@degjs/dom-utils";
@@ -18,6 +19,7 @@ const port = 3000;
 const parsedData = [];
 const foundEmails = new Set();
 const foundPhones = new Set();
+
 
 // (async () => {
 //     const url = 'https://www.example.com';
@@ -49,18 +51,43 @@ app.get('/', async (req, res) => {
             }
         };
 
-        const findData = (node) => {
-            const $ = cheerio.load(node);
-            $('script[type="application/ld+json"]').each((index, element) => {
-                console.log('WORK');
-                const scriptContent = $(element).html().trim();
-                const data = JSON.parse(scriptContent);
-                if (data.name) {
-                    const name = data.name;
-                    parsedData.push(name);
-                    console.log(name);
+
+
+        function findH1WithClass(document) {
+            const h1Elements = [];
+
+            function traverse(node) {
+                if (node.nodeName === 'div' &&
+                    node.attrs &&
+                    node.attrs.some(attr => attr.name === 'class' && attr.value === 'main-content svelte-ectbpk')) {
+                    findH1(node);
                 }
-            });
+
+                if (node.childNodes) {
+                    node.childNodes.forEach(childNode => traverse(childNode));
+                }
+            }
+
+            function findH1(node) {
+                if (node.nodeName === 'h1' &&
+                    node.attrs &&
+                    node.attrs.some(attr => attr.name === 'class' && attr.value === 'svelte-ectbpk')) {
+                    h1Elements.push(node);
+                }
+            }
+
+            traverse(document);
+            return h1Elements;
+        }
+
+
+
+        const findData = (node) => {
+            const h1Elements = findH1WithClass(node);
+            const title = h1Elements[0].childNodes[0].value;
+            parsedData.push(title);
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!=>', h1Elements[0].childNodes[0].value);
+
             if (node.attrs) {
                 const href = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('mailto:'));
                 if (href) {
@@ -95,11 +122,11 @@ app.get('/', async (req, res) => {
 
 
         while(page <= 1) {
-            while (hrefs.length != 11) {
+            while (hrefs.length != 0) {
                 const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
                 console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
                 const dataNext = await rotateWithBrightData(nextUrl);
-                console.log(dataNext);
+                // console.log(dataNext);
                 const documentNext = parse5.parse(dataNext);
                 findData(documentNext);
             }
