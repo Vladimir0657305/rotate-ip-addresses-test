@@ -72,8 +72,10 @@ app.get('/', async (req, res) => {
                 if (node.nodeName === 'h1' &&
                     node.attrs &&
                     node.attrs.some(attr => attr.name === 'class' && attr.value === 'svelte-ectbpk')) {
-                    h1Elements.push(node);
+                    return node.childNodes[0].value;
                 }
+
+                return node.childNodes && node.childNodes.length > 0 ? findH1(node.childNodes[0]) : null;
             }
 
             traverse(document);
@@ -83,10 +85,9 @@ app.get('/', async (req, res) => {
 
 
         const findData = (node) => {
-            const h1Elements = findH1WithClass(node);
-            const title = h1Elements[0].childNodes[0].value;
+            const title = findH1WithClass(node);
             parsedData.push(title);
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!=>', h1Elements[0].childNodes[0].value);
+            console.log('Name=>', title);
 
             if (node.attrs) {
                 const href = node.attrs.find((attr) => attr.name === 'href' && attr.value.startsWith('mailto:'));
@@ -94,7 +95,7 @@ app.get('/', async (req, res) => {
                     const emailTemp = href.value.substring(7);
                     const email = emailTemp.split('?')[0];
                     if (!foundEmails.has(email)) {
-                        console.log('EMAIL', email);
+                        console.log('EMAIL=>', email);
                         parsedData.push(email);
                         foundEmails.add(email);
                     }
@@ -103,7 +104,7 @@ app.get('/', async (req, res) => {
                 if (tel) {
                     const phone = tel.value.substring(4);
                     if (!foundPhones.has(phone)) {
-                        console.log('PHONE', phone);
+                        console.log('PHONE=>', phone);
                         parsedData.push(phone);
                         foundPhones.add(phone);
                     }
@@ -118,7 +119,7 @@ app.get('/', async (req, res) => {
         findHref(document);
 
 
-        let nextPageUrl;
+        // let nextPageUrl;
 
 
         while(page <= 1) {
