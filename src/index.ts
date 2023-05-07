@@ -1,16 +1,8 @@
-// import { createObjectCsvWriter } from 'csv-writer';
 import dotenv from 'dotenv';
 import express from 'express';
 import * as parse5 from 'parse5';
-// import { TreeAdapter } from 'parse5';
 import { rotateWithBrightData } from './rotateWithBrightData';
 const fs = require('fs');
-// import * as domUtils from "@degjs/dom-utils";
-// const { parse } = require('node-html-parser');
-// const cheerio = require('cheerio');
-
-
-// import fetch from 'node-fetch';
 
 dotenv.config();
 
