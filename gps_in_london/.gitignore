@@ -4,6 +4,12 @@
 /node_modules
 /.pnp
 .pnp.js
+node_modules
+**/site-packages/
+dist/
+.env
+*.csv
+*.zip
 
 # testing
 /coverage

@@ -52,7 +52,8 @@ app.get('/', async (req, res) => {
             const email = findEmail(node, 'center svelte-11uoyco');
             const phone = findPhone(node, 'center svelte-11uoyco');
 
-            parsedData.push(`${counter},${title},${subSpecialities},${email},${phone}`);
+            // parsedData.push(`${counter},${title},${subSpecialities},${email},${phone}`);
+            parsedData.push([counter, title, subSpecialities, email, phone]);
 
             console.log(parsedData);
             counter++;
@@ -69,20 +70,20 @@ app.get('/', async (req, res) => {
                 for (const childNode of node.childNodes) {
                     const result = findDivWithClass(childNode, className);
                     if (result) {
-                        console.log('div with class found:', result);
+                        // console.log('div with class found:', result);
                         return result;
                     }
                 }
             }
 
-            console.log('div with class not found');
+            // console.log('div with class not found');
             return null;
         }
 
         const findFirstH1 = (node) => {
             if (node.nodeName === 'h1') {
                 const name = node.childNodes.find((childNode) => childNode.nodeName === '#text').value.trim();
-                console.log('Name=>', name);
+                // console.log('Name=>', name);
                 return name;
             }
 
@@ -160,7 +161,7 @@ app.get('/', async (req, res) => {
         while (page <= 1) {
             while (hrefs.length != 0) {
                 const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
-                console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
+                // console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
                 const dataNext = await rotateWithBrightData(nextUrl);
                 const documentNext = parse5.parse(dataNext);
                 findData(documentNext);
@@ -171,11 +172,16 @@ app.get('/', async (req, res) => {
             const nextPageData = parse5.parse(data);
             findHref(nextPageData);
         }
-
+        
+        // const csvData = parsedData.map((data) => {
+        //     return data.join(',') + '\n';
+        // }).join("");
         // Convert parsedData array to CSV format and write to file
-        const csvData = parsedData.map((data) => {
-            return data.join(',') + '\n';
-        }).join("");
+        const csvData = parsedData.reduce((acc, data) => {
+            const row = data.join(',');
+            return acc + row + '\n';
+        }, '');
+
 
         fs.writeFile('file.csv', csvData, (err) => {
             if (err) throw err;
