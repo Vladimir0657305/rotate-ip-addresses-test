@@ -22,7 +22,7 @@ let counter = 1;
 app.get('/', async (req, res) => {
     try {
         let page = 0;
-        const lastPage = 21;
+        const lastPage = 3;
         let url = 'https://www.phin.org.uk/search/consultants?s_location_input=London&s_location_coordinates=51.5072178%2C-0.1275862&s_speciality_input=General%20medicine&s_speciality_id=300';
         let data = await rotateWithBrightData(url);
         const hrefs = [];
@@ -55,7 +55,7 @@ app.get('/', async (req, res) => {
             // parsedData.push(`${counter},${title},${subSpecialities},${email},${phone}`);
             parsedData.push([counter, title, subSpecialities, email, phone]);
 
-            console.log(parsedData);
+            console.log('parsedData=>',parsedData);
             counter++;
         }
 
@@ -158,7 +158,7 @@ app.get('/', async (req, res) => {
 
         findHref(document);
 
-        while (page <= 1) {
+        while (page <= lastPage) {
             while (hrefs.length != 0) {
                 const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
                 // console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
@@ -172,6 +172,7 @@ app.get('/', async (req, res) => {
             const nextPageData = parse5.parse(data);
             findHref(nextPageData);
         }
+
         
         // const csvData = parsedData.map((data) => {
         //     return data.join(',') + '\n';
@@ -181,7 +182,6 @@ app.get('/', async (req, res) => {
             const row = data.join(',');
             return acc + row + '\n';
         }, '');
-
 
         fs.writeFile('file.csv', csvData, (err) => {
             if (err) throw err;
