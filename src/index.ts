@@ -161,7 +161,6 @@ app.get('/', async (req, res) => {
         while (page <= lastPage) {
             while (hrefs.length != 0) {
                 const nextUrl = `https://www.phin.org.uk/${hrefs.shift()}`;
-                // console.log('PAGE=>', page, 'NEXTURL=>', nextUrl);
                 const dataNext = await rotateWithBrightData(nextUrl);
                 const documentNext = parse5.parse(dataNext);
                 findData(documentNext);
@@ -174,10 +173,6 @@ app.get('/', async (req, res) => {
         }
 
         
-        // const csvData = parsedData.map((data) => {
-        //     return data.join(',') + '\n';
-        // }).join("");
-        // Convert parsedData array to CSV format and write to file
         const csvData = parsedData.reduce((acc, data) => {
             const row = data.join(',');
             return acc + row + '\n';
