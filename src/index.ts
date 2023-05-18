@@ -13,12 +13,6 @@ const foundEmails = new Set();
 const foundPhones = new Set();
 let counter = 1;
 
-// (async () => {
-//     const url = 'https://www.example.com';
-//     const data = await rotateWithBrightData(url);
-//     console.log(data);
-// })();
-
 app.get('/', async (req, res) => {
     try {
         let page = 0;
